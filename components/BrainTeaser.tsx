@@ -113,7 +113,39 @@ const BrainTeaser: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         setSelectedCells([{ row, col }]);
     };
 
+    const handleCellTouchStart = (row: number, col: number) => {
+        setIsSelecting(true);
+        setSelectedCells([{ row, col }]);
+    };
+
     const handleCellMouseEnter = (row: number, col: number) => {
+        if (!isSelecting || selectedCells.find(c => c.row === row && c.col === col)) return;
+        
+        const firstCell = selectedCells[0];
+        const lastCell = selectedCells[selectedCells.length - 1];
+        const dRow = Math.sign(row - firstCell.row);
+        const dCol = Math.sign(col - firstCell.col);
+
+        // Check for straight line
+        if (Math.abs(row - firstCell.row) !== Math.abs(col - firstCell.col) && row - firstCell.row !== 0 && col - firstCell.col !== 0) {
+            return;
+        }
+
+        const newSelection = [{...firstCell}];
+        let currRow = firstCell.row + dRow;
+        let currCol = firstCell.col + dCol;
+
+        while(true) {
+            newSelection.push({row: currRow, col: currCol});
+            if (currRow === row && currCol === col) break;
+            currRow += dRow;
+            currCol += dCol;
+        }
+        setSelectedCells(newSelection);
+    };
+
+    const handleCellTouchMove = (e: React.TouchEvent, row: number, col: number) => {
+        e.preventDefault(); // Prevent scrolling while selecting
         if (!isSelecting || selectedCells.find(c => c.row === row && c.col === col)) return;
         
         const firstCell = selectedCells[0];
@@ -159,6 +191,26 @@ const BrainTeaser: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         setSelectedCells([]);
     };
 
+    const handleTouchEnd = () => {
+        if (!isSelecting) return;
+        setIsSelecting(false);
+
+        const selectedWord = selectedCells.map(cell => grid[cell.row][cell.col]).join('');
+        const reversedWord = selectedWord.split('').reverse().join('');
+        
+        const foundWord = wordsToFind.find(w => !w.found && (w.text === selectedWord || w.text === reversedWord));
+
+        if (foundWord) {
+            setWordsToFind(prev => prev.map(w => w.text === foundWord.text ? { ...w, found: true } : w));
+            // Add the positions of the found word to foundWordPositions
+            const wordPos = wordPositions.find(wp => wp.word === foundWord.text);
+            if (wordPos) {
+                setFoundWordPositions(prev => [...prev, ...wordPos.positions]);
+            }
+        }
+        setSelectedCells([]);
+    };
+
     const isCellSelected = (row: number, col: number) => selectedCells.some(c => c.row === row && c.col === col);
     
     const isCellFound = (row: number, col: number) => {
@@ -170,7 +222,7 @@ const BrainTeaser: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     return (
         <div className="flex flex-col h-screen" onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
             <Header title="Brain Teaser" onBack={onBack} />
-            <div className="flex-1 p-4 md:p-6 flex flex-col overflow-y-auto">
+            <div className="flex-1 p-4 md:p-6 flex flex-col overflow-y-auto" onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} onTouchEnd={handleTouchEnd}>
                 <div className="text-center mb-4">
                     <h2 className="text-xl font-bold text-slate-800">Cari Kata Tersembunyi</h2>
                     <p className="text-slate-500 mt-1">Klik dan seret untuk memilih kata.</p>
@@ -200,6 +252,8 @@ const BrainTeaser: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                                         className={`flex items-center justify-center aspect-square text-sm md:text-base font-bold rounded-md transition-colors duration-100 select-none ${bgColor} ${isSelected ? 'text-white' : 'text-slate-800'}`}
                                         onMouseDown={() => handleCellMouseDown(rowIndex, colIndex)}
                                         onMouseEnter={() => handleCellMouseEnter(rowIndex, colIndex)}
+                                        onTouchStart={() => handleCellTouchStart(rowIndex, colIndex)}
+                                        onTouchMove={(e) => handleCellTouchMove(e, rowIndex, colIndex)}
                                     >
                                         {letter}
                                     </div>
