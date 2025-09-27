@@ -1,0 +1,15 @@
+# BUMARESWA Brain Teaser. Kata yang harus dicari:
+- burnout 
+- waktu
+- stres 
+- fisik 
+- psikologis
+- sosial
+- terapi 
+- konseling 
+- motivasi 
+- emosional 
+- istirahat 
+- self care
+- meditasi 
+- balance
