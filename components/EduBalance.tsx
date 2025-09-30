@@ -2,8 +2,8 @@ import React from 'react';
 import Header from './Header';
 
 const videos = [
-  { id: '9txi4xQMhY8', title: 'Cara Mengatasi Burnout pada Remaja' },
-  { id: 'aakMc6bOjdw', title: 'Teknik Manajemen Stres yang Efektif' },
+  { id: 'aakMc6bOjdw', title: 'Cara Mengatasi Burnout pada Remaja' },
+  { id: '9txi4xQMhY8', title: 'Teknik Manajemen Stres yang Efektif' },
   { id: 'WMfRHf5kjsE', title: 'Pentingnya Work-Life Balance untuk Kesehatan Mental' },
 ];
 

@@ -6,20 +6,38 @@ import { CheckCircleIcon, XCircleIcon } from './Icons';
 // Load quiz questions from JSON file
 import quizData from '../quizData.json';
 
-const quizQuestions: QuizQuestion[] = quizData.questions;
+// Utility function to shuffle an array
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
 
 const BalanceQuiz: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [isFinished, setIsFinished] = useState(false);
 
+  // Initialize quiz with shuffled questions
+  useEffect(() => {
+    const shuffledQuestions = shuffleArray(quizData.questions).map(question => ({
+      ...question,
+      options: shuffleArray([...question.options]) // Shuffle options for each question
+    }));
+    setQuestions(shuffledQuestions);
+  }, []);
+
   const handleAnswer = (answer: string) => {
-    if (selectedAnswer) return;
+    if (selectedAnswer || questions.length === 0) return;
 
     setSelectedAnswer(answer);
-    if (answer === quizQuestions[currentQuestionIndex].correctAnswer) {
+    if (answer === questions[currentQuestionIndex].correctAnswer) {
       setScore(s => s + 10);
       setFeedback('correct');
     } else {
@@ -29,7 +47,7 @@ const BalanceQuiz: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setTimeout(() => {
       setSelectedAnswer(null);
       setFeedback(null);
-      if (currentQuestionIndex < quizQuestions.length - 1) {
+      if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(i => i + 1);
       } else {
         setIsFinished(true);
@@ -38,21 +56,38 @@ const BalanceQuiz: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   };
 
   const restartQuiz = () => {
+    const shuffledQuestions = shuffleArray(quizData.questions).map(question => ({
+      ...question,
+      options: shuffleArray([...question.options]) // Shuffle options for each question
+    }));
+    setQuestions(shuffledQuestions);
     setCurrentQuestionIndex(0);
     setScore(0);
     setIsFinished(false);
   };
 
   const getButtonClass = (option: string) => {
-    if (!selectedAnswer) return 'bg-white hover:bg-violet-50';
+    if (!selectedAnswer || questions.length === 0) return 'bg-white hover:bg-violet-50';
     if (option === selectedAnswer) {
       return feedback === 'correct' ? 'bg-green-500 border-green-500 text-white' : 'bg-red-500 border-red-500 text-white';
     }
-    if (option === quizQuestions[currentQuestionIndex].correctAnswer) {
+    if (option === questions[currentQuestionIndex].correctAnswer) {
       return 'bg-green-500 border-green-500 text-white';
     }
     return 'bg-slate-100 text-slate-500 border-slate-100';
   };
+
+  // Show loading state while questions are being shuffled
+  if (questions.length === 0) {
+    return (
+      <div className="flex flex-col h-screen">
+        <Header title="Balance Quiz" onBack={onBack} />
+        <div className="flex-1 flex flex-col justify-center items-center p-6 text-center">
+          <p className="text-slate-500">Memuat soal quiz...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isFinished) {
     return (
@@ -70,15 +105,15 @@ const BalanceQuiz: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     );
   }
 
-  const currentQuestion = quizQuestions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / quizQuestions.length) * 100;
+  const currentQuestion = questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   return (
     <div className="flex flex-col h-screen">
       <Header title="Balance Quiz" onBack={onBack} />
       <div className="p-6 flex-1 flex flex-col">
         <div className="mb-4">
-          <p className="text-sm text-slate-500 mb-1">Pertanyaan {currentQuestionIndex + 1} dari {quizQuestions.length}</p>
+          <p className="text-sm text-slate-500 mb-1">Pertanyaan {currentQuestionIndex + 1} dari {questions.length}</p>
           <div className="w-full bg-slate-200 rounded-full h-2.5">
             <div className="bg-violet-500 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
           </div>
