@@ -80,22 +80,22 @@ const quotes = [
 
 // Image paths for the quote slider
 const quoteImages = [
-  "/assets/quote-1.jpeg",
-  "/assets/quote-2.jpeg",
-  "/assets/quote-3.jpeg",
-  "/assets/quote-4.jpeg",
-  "/assets/quote-5.jpeg",
-  "/assets/quote-6.jpeg",
-  "/assets/quote-7.jpeg",
-  "/assets/quote-8.jpeg",
-  "/assets/quote-9.jpeg",
-  "/assets/quote-10.jpeg",
-  "/assets/quote-11.jpeg",
-  "/assets/quote-12.jpeg",
-  "/assets/quote-13.jpeg",
-  "/assets/quote-14.jpeg",
-  "/assets/quote-15.jpeg",
-  "/assets/quote-16.jpeg"
+  "https://ik.imagekit.io/ki/assets/quote-1.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-2.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-3.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-4.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-5.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-6.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-7.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-8.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-9.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-10.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-11.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-12.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-13.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-14.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-15.jpeg?updatedAt=1759288606957",
+  "https://ik.imagekit.io/ki/assets/quote-16.jpeg?updatedAt=1759288606957"
 ];
 
 const ImageQuoteSlider: React.FC = () => {
