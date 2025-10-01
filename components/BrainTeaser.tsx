@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Header from './Header';
 import { Word } from '../types';
 
@@ -94,7 +94,11 @@ const BrainTeaser: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     const [selectedCells, setSelectedCells] = useState<{ row: number; col: number }[]>([]);
     const [isSelecting, setIsSelecting] = useState(false);
     const [foundWordPositions, setFoundWordPositions] = useState<{ row: number; col: number }[]>([]);
-    
+    const [startTime, setStartTime] = useState<number | null>(null);
+    const [elapsedTime, setElapsedTime] = useState<number>(0);
+    const [gameCompleted, setGameCompleted] = useState(false);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
     const initializeGame = useCallback(() => {
         const { grid, placedWords, wordPositions } = generateGrid(words, gridSize);
         setGrid(grid);
@@ -102,11 +106,62 @@ const BrainTeaser: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         setWordPositions(wordPositions);
         setSelectedCells([]);
         setFoundWordPositions([]);
-    }, []);
+        setStartTime(Date.now()); // This will trigger the timer effect
+        setElapsedTime(0);
+        setGameCompleted(false);
+    }, []); // Remove startTime from dependency array
 
     useEffect(() => {
         initializeGame();
+        
+        // Cleanup interval on unmount
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
     }, [initializeGame]);
+
+    // Check if all words are found
+    useEffect(() => {
+        const allWordsFound = wordsToFind.length > 0 && wordsToFind.every(w => w.found);
+        if (allWordsFound && !gameCompleted) {
+            setGameCompleted(true);
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        }
+    }, [wordsToFind, gameCompleted]);
+
+    // Fix the timer by updating it in a separate effect
+    useEffect(() => {
+        if (startTime) {
+            // Clear any existing interval
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+            
+            // Start the timer
+            intervalRef.current = setInterval(() => {
+                setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+            }, 1000);
+        }
+        
+        // Cleanup interval on unmount
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
+    }, [startTime]);
+
+    const isCellSelected = (row: number, col: number) => selectedCells.some(c => c.row === row && c.col === col);
+    
+    const isCellFound = (row: number, col: number) => {
+        return foundWordPositions.some(pos => pos.row === row && pos.col === col);
+    };
+    
+    const allWordsFound = wordsToFind.length > 0 && wordsToFind.every(w => w.found);
 
     const handleCellMouseDown = (row: number, col: number) => {
         setIsSelecting(true);
@@ -211,13 +266,12 @@ const BrainTeaser: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         setSelectedCells([]);
     };
 
-    const isCellSelected = (row: number, col: number) => selectedCells.some(c => c.row === row && c.col === col);
-    
-    const isCellFound = (row: number, col: number) => {
-        return foundWordPositions.some(pos => pos.row === row && pos.col === col);
+    // Format time for display (MM:SS)
+    const formatTime = (seconds: number): string => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
-    
-    const allWordsFound = wordsToFind.length > 0 && wordsToFind.every(w => w.found);
 
     return (
         <div className="flex flex-col h-screen" onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
@@ -226,6 +280,10 @@ const BrainTeaser: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 <div className="text-center mb-4">
                     <h2 className="text-xl font-bold text-slate-800">Cari Kata Tersembunyi</h2>
                     <p className="text-slate-500 mt-1">Klik dan seret untuk memilih kata.</p>
+                    {/* Timer display */}
+                    <div className="mt-2 text-lg font-bold text-violet-600">
+                        Waktu: {formatTime(elapsedTime)}
+                    </div>
                 </div>
 
                 <div className="w-full aspect-square bg-violet-100 p-2 rounded-lg shadow-inner">
@@ -276,6 +334,7 @@ const BrainTeaser: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                  {allWordsFound && (
                     <div className="mt-4 text-center">
                         <p className="font-bold text-green-600">Selamat! Kamu menemukan semua kata!</p>
+                        <p className="text-slate-700 mt-1">Waktu Selesai: {formatTime(elapsedTime)}</p>
                         <button onClick={initializeGame} className="mt-2 bg-violet-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-violet-600 transition-colors">
                             Main Lagi
                         </button>
